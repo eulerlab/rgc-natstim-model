@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rgc_natstim_model"
+version = "0.0.1"
+description = "Analysis code for Hoefling et al. (2024) eLife"
+requires-python = ">=3.8"
+dynamic = ["dependencies"]
+
+[tool.setuptools]
+packages = ["rgc_natstim_model"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+
