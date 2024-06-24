@@ -110,6 +110,7 @@ def plot_vector_field_resp_iso(x, y,
 
 
 def plot_resp_diff(nonlin_dict, lin_dict, neuron_id,  green_contrast_values,
+                   normalize_responses=True,
                    rc_dict={}):
     def format_xticks(value, pos):
         return f'{xtick_labels[pos]:.1f}'
@@ -118,9 +119,10 @@ def plot_resp_diff(nonlin_dict, lin_dict, neuron_id,  green_contrast_values,
 
     with mpl.rc_context(rc_dict):
         a = nonlin_dict[neuron_id].transpose()
-        a = 100*a/a.max()
         b = lin_dict[neuron_id].transpose()
-        b = 100*b / b.max()
+        if normalize_responses:
+            a = 100*a/a.max()
+            b = 100*b / b.max()
         diff = a-b
         abs_max = np.max([abs(diff.min()), abs(diff.max())])
         norm=Normalize(vmin=-abs_max, vmax=abs_max)
