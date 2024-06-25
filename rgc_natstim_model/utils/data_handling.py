@@ -51,9 +51,17 @@ def convert_nested_dict_to_dataframe(nested_dict):
 
 def unPickle(filename):
     '''
-    to shorten 3 lines into 1 line
+    shorten 3 lines into 1 line
     '''
     with open(filename,'rb') as f:
         output = pickle.load(f)
     f.close()
     return output
+    
+def makePickle(filename,data):
+    '''
+    shorten 3 lines into 1 line
+    '''
+    with open(filename,'wb') as f:
+        pickle.dump(data,f)
+    f.close()
