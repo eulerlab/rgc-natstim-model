@@ -64,3 +64,4 @@ def get_rectangle_corners(xy_tuple):
     top_right = (int(center_x + half_width), int(center_y - half_height))
     bottom_left = (int(center_x - half_width), int(center_y + half_height))
     bottom_right = (int(center_x + half_width), int(center_y + half_height))
+    return top_left, top_right, bottom_left, bottom_right
