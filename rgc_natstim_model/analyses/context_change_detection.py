@@ -4,7 +4,7 @@ from scipy import interpolate
 import pickle as pkl
 from typing import Dict
 from rgc_natstim_model.constants.context_change_detection import (
-    DUR_MOVIE, RANDOM_SEQUENCES_PATH, GROUP_INFO_PATH, DATA_PATH, START_INDICES,
+    DUR_MOVIE, RANDOM_SEQUENCES_PATH, GROUP_INFO_PATH, START_INDICES,
     NUM_CLIPS, NUM_CLIPS_TOTAL, NUM_VAL_CLIPS, CLIP_DUR, MOVIE_DUR
 )
 
