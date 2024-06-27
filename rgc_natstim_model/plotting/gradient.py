@@ -57,11 +57,6 @@ def plot_vector_field_resp_iso(x, y,
 
     # Define levels for isoresponse lines
     levels = np.linspace(Z.min(), Z.max(), 25)
-    print(levels.min())
-    print(levels.max())
-    #levels = np.linspace(0, 100, 26)
-    print(gradient_norm_grid.min())
-    print(gradient_norm_grid.max())
     cm = ColorMapper("cool", vmin=gradient_norm_grid.min(),
                      vmax=gradient_norm_grid.max())
 

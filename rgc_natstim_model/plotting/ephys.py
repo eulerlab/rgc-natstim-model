@@ -17,7 +17,8 @@ def plot_imaging_ephys(resp_imaging: Dict,
                        opt_slice: slice,
                        ephys_idxs: List,
                        rc_dict_raster: Dict,
-                       x_offset=np.float32
+                       x_offset=np.float32,
+                       color_mode=0
                        ):
 
 
@@ -30,13 +31,24 @@ def plot_imaging_ephys(resp_imaging: Dict,
         )[:, sorting_idx]
         n_imaging = temp.shape[0]
         imaging_label = f'Imaging, n={n_imaging}'
-        ax1.errorbar(np.arange(11)-x_offset,
-                     temp.mean(axis=0),
-                     yerr=temp.std(axis=0),
-                     color='k',
-                     fmt='o',
-                     label=imaging_label
-                     )
+        if color_mode == 0:
+            for i, t in enumerate(example_types):
+                ax1.errorbar(i - x_offset,
+                             temp.mean(axis=0)[i],
+                             yerr=temp.std(axis=0)[i],
+                             color=cmap_colors[t-1],
+                             fmt='o',
+                             label=imaging_label
+                             )
+        elif color_mode == 1:
+            ax1.errorbar(np.arange(11)-x_offset,
+                         temp.mean(axis=0),
+                         yerr=temp.std(axis=0),
+                         color='k',
+                         fmt='o',
+                         label=imaging_label
+                         )
+        else: NotImplementedError
         ax1.set_ylabel('z-scored activity \n(Ca-imaging)',
                        color='k')
         ax1.tick_params(axis='y', colors='k')
@@ -45,17 +57,31 @@ def plot_imaging_ephys(resp_imaging: Dict,
         ax2 = ax1.twinx()
         n_ephys = len(ephys_idxs)
         ephys_label = f'Electrophysiology, n={n_ephys}'
-        ax2.errorbar(np.arange(11) + x_offset,
-                     resp_ephys[ephys_idxs, :].mean(axis=0),
-                     yerr=resp_ephys[ephys_idxs, :].std(axis=0),
-                     color='b',
-                     fmt='o',
-                     label=ephys_label
-                     )
+        ephys_color= 'grey'
+        if color_mode == 0:
+            for i, t in enumerate(example_types):
+                ax2.errorbar(i + x_offset,
+                             resp_ephys[ephys_idxs, :].mean(axis=0)[i],
+                             yerr=resp_ephys[ephys_idxs, :].std(axis=0)[i],
+                             color=cmap_colors[t-1],
+                             fmt='o',
+                             markerfacecolor='w',
+                             label=ephys_label
+                             )
+        elif color_mode == 1:
+            ax2.errorbar(np.arange(11) + x_offset,
+                         resp_ephys[ephys_idxs, :].mean(axis=0),
+                         yerr=resp_ephys[ephys_idxs, :].std(axis=0),
+                         color=ephys_color,
+                         fmt='o',
+                         linestyle='dotted',
+                         label=ephys_label
+                         )
+        else: NotImplementedError
 
         ax2.set_ylabel('z-scored activity \n(patch-clamp)',
-                       color='b')
-        ax2.tick_params(axis='y', colors='b')
+                       color=ephys_color)
+        ax2.tick_params(axis='y', colors=ephys_color)
 
         lines_1, labels_1 = ax1.get_legend_handles_labels()
         lines_2, labels_2 = ax2.get_legend_handles_labels()
