@@ -8,9 +8,9 @@ This repository contains the code to reproduce the analyses and figures presente
 
 ## How to use this repository
 1. Clone this repository, navigate to its directory, and install it via  
-`pip install .`
+`pip install .` Also install packages listed in the `requirements.txt` file.
 2. Download the data and model files from [G-Node ](https://gin.g-node.org/lhoefling/rgc-natstim). Update the `base_directory` in `rgc_natstim_model/constants/paths.py` to point to the respective directory on your machine. 
 ### Reproducing figures 
- 
+ Run the notebooks. 
 ### Training models
-
+Run the `model_training` notebook. In order to generate MEIs, run the `mei_generation` notebook. Model and MEI optimization functionality is implemented in [open-retina](https://github.com/open-retina/open-retina/tree/main).
