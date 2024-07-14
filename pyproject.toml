@@ -9,8 +9,8 @@ description = "Analysis code for Hoefling et al. (2024) eLife"
 requires-python = ">=3.8"
 dynamic = ["dependencies"]
 
-[tool.setuptools]
-packages = ["rgc_natstim_model"]
+[tool.setuptools.packages.find]
+include = ["rgc_natstim_model*"]
 
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}
