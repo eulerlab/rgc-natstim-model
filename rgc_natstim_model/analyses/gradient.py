@@ -38,7 +38,7 @@ def trainer_fn(mei_contrast_gen, model_neuron, optimizer=optim.Adam, lr=1):
     Trainer function for getting the gradient on the MEI with different contrasts
     """
     optimizer = optimizer(mei_contrast_gen.parameters(), lr=lr)
-    loss = model_neuron(mei_contrast_gen())
+    loss = model_neuron.forward(mei_contrast_gen())
     loss.backward()
     grad_val = deepcopy(mei_contrast_gen.contrast_values.grad)
     optimizer.zero_grad()
@@ -94,3 +94,29 @@ def get_gradient_angle(gradient_grid):
             angle_grid[i, j] = calculate_angle(x_axis, gradient_grid[:, i, j])
     return angle_grid
 
+
+def equalize_channels(mei: torch.Tensor,
+                      flip_green: bool = True) -> torch.Tensor:
+    '''
+    Scales the (green and UV) channels of an MEI such that they have equal norm,
+    and the scaled MEI has the same norm as the original MEI. Optionally and by
+    default flips sign of green channel
+    :param mei: torch.Tensor, shape (1, 2, 50, 18, 16)
+    :param flip_green: bool
+    :return: equalized_mei: torch.Tensor, shape (1, 2, 50, 18, 16)
+    '''
+    green_chan = mei[0, 0]
+    uv_chan = mei[0, 1]
+    green_norm = torch.norm(green_chan)
+    uv_norm = torch.norm(uv_chan)
+    total_norm = torch.norm(mei)
+    green_factor = (total_norm/2)/green_norm
+    uv_factor = (total_norm/2)/uv_norm
+    equalized_mei = torch.zeros_like(mei).cuda()
+    equalized_mei[0, 0] = green_factor * mei[0, 0]
+    if flip_green:
+        equalized_mei[0, 0] = -1 * equalized_mei[0, 0]
+    equalized_mei[0, 1] = uv_factor * mei[0, 1]
+    total_factor = total_norm/torch.norm(equalized_mei)
+    equalized_mei = total_factor * equalized_mei
+    return equalized_mei
