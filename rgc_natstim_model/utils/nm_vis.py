@@ -45,6 +45,20 @@ def downSample(img):
     output = block_reduce(img,block_size=(4,4),func = np.mean)
 
     return output
+    
+def rotate90(sti):
+    '''
+    rotate the stimuli clockwise for 90 degrees
+    
+    input:
+        sti np.array: (4000,2,120,18,16)
+    return
+        r_sti np.array: (4000,2,120,16,18)
+    '''
+    sti= sti.reshape((4000*2*120,18,16))
+    r_sti = np.rot90(sti, k=3,axes=(-1,-2))
+    r_sti = r_sti.reshape((4000,2,120,16,18))
+    return r_sti
 
 def resize_downSample(img):
     # input img is a 2D_matrix3
