@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import pickle
 
 def convert_nested_dict_to_dataframe(nested_dict):
     """
@@ -47,3 +48,20 @@ def convert_nested_dict_to_dataframe(nested_dict):
     df = pd.DataFrame(records)
     df.set_index('neuron_id', drop=False, inplace=True)
     return df
+
+def unPickle(filename):
+    '''
+    shorten 3 lines into 1 line
+    '''
+    with open(filename,'rb') as f:
+        output = pickle.load(f)
+    f.close()
+    return output
+    
+def makePickle(filename,data):
+    '''
+    shorten 3 lines into 1 line
+    '''
+    with open(filename,'wb') as f:
+        pickle.dump(data,f)
+    f.close()
