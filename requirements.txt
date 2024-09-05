@@ -9,4 +9,5 @@ torchaudio
 torchvision
 elephant
 neuralpredictors @ git+https://github.com/sinzlab/neuralpredictors.git@c99491f65d9f263ae1cbafcada528681f37a3967
-openretina @ git+https://github.com/open-retina/open-retina.git@2e6e31b7f95a3fe4d03d3ad819da733b8fb3860e
+openretina==0.1.0
+h5py
