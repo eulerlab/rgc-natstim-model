@@ -8,6 +8,8 @@ torch
 torchaudio
 torchvision
 elephant
+h5py
+tabulate
 neuralpredictors @ git+https://github.com/sinzlab/neuralpredictors.git@c99491f65d9f263ae1cbafcada528681f37a3967
 openretina==0.1.0
-h5py
+
