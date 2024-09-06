@@ -1,1 +1,2 @@
-base_directory = '/gpfs01/euler/data/SharedFiles/projects/Hoefling2024/'
+import os
+base_directory = 'path/to/rgc-natstim'
