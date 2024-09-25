@@ -3,6 +3,7 @@ import pandas as pd
 from scipy import interpolate
 import pickle as pkl
 from typing import Dict, Union, Tuple
+from copy import deepcopy
 from rgc_natstim_model.constants.context_change_detection import (
     DUR_MOVIE, RANDOM_SEQUENCES_PATH, GROUP_INFO_PATH, START_INDICES,
     NUM_CLIPS, NUM_CLIPS_TOTAL, NUM_VAL_CLIPS, CLIP_DUR, MOVIE_DUR
@@ -57,7 +58,8 @@ def get_resp_dicts(dataframe: pd.DataFrame,
 
 def get_movie_contrast_by_session(session_ids, sess2movie_dict):
     """
-    Calculate the movie contrasts for each session.
+    Calculate the contrast in green and UV channels for each transition between movie snippet in each session. 
+    Since sessions have different ordering of movie snippets, do this by session.
     Parameters:
     - session_ids (array-like): An array-like object containing the session IDs.
     - sess2movie_dict (dict): A dictionary mapping session IDs to movie data.
@@ -67,9 +69,6 @@ def get_movie_contrast_by_session(session_ids, sess2movie_dict):
         The first dimension represents the movie channel (0 or 1),
         and the second dimension represents the movie contrast for each start index.
     """
-    # Function body...
-
-
 
     movie_contrasts_by_session = {session_id: np.zeros((2, len(START_INDICES)))
                                   for session_id in np.unique(session_ids)}
@@ -252,7 +251,7 @@ def get_ind_roc_curve(df: pd.DataFrame,
         df                     (pd.DataFrame)          : DataFrame containing neuron and session information.
         sess2vertical_transitions (dict)               : Dictionary mapping session IDs to transition labels.
         binned_resp_dict       (dict)                  : Dictionary mapping neuron IDs to binned response values.
-        target_transition      (int or str)            : Label of the target transition.
+        target_transition      (int or str)            : Label of the target transition to be detected.
         cell_type              (str)                   : Cell type to filter neurons.
         offtarget_transition   (int, or "all")         : Label of the off-target transition or "all" for all non-target transitions (default is "all").
         num_bins               (int)                   : Number of bins for sampling points on the response curve (default is 40).
@@ -262,19 +261,21 @@ def get_ind_roc_curve(df: pd.DataFrame,
         tuple: A tuple containing dictionaries for true positive rates, false positive rates, AUC values, ROC curve functions, inverse ROC curve functions, and thresholds by neuron ID.
     """
 
-    tpr_by_nid = {}
-    fpr_by_nid = {}
-    auc_by_nid = {}
-    functions_by_nid = {}
-    inverse_functions_by_nid = {}
-    thresholds_by_nid = {}
+    tpr_by_nid = {}  # true positive rates by neuron id
+    fpr_by_nid = {}  # false positive rates by neuron id
+    auc_by_nid = {}  # AUC values by neuron id
+    functions_by_nid = {}  # ROC curve function fits by neuron id
+    inverse_functions_by_nid = {}  # inverse ROC curve function fits by neuron id
+    thresholds_by_nid = {}  # thresholds by neuron id
     curr_nids = df[df["group_assignment"] == cell_type]["neuron_id"].to_numpy()
     curr_sids = df[df["group_assignment"] == cell_type]["session_id"].to_numpy()
     for j, (curr_nid, curr_sid) in enumerate(zip(curr_nids, curr_sids)):
         fpr, tpr, f, f_inverse, auc, ds = get_roc_curve(binned_resp_dict[curr_nid],
                                                         sess2vertical_transitions[curr_sid],
-                                                        target_transition, offtarget_transition,
-                                                        above_threshold, num_bins)
+                                                        target_transition, 
+                                                        offtarget_transition,
+                                                        above_threshold, 
+                                                        num_bins)
 
         tpr_by_nid[curr_nid] = tpr
         fpr_by_nid[curr_nid] = fpr
@@ -285,33 +286,28 @@ def get_ind_roc_curve(df: pd.DataFrame,
     return tpr_by_nid, fpr_by_nid, auc_by_nid, functions_by_nid, inverse_functions_by_nid, thresholds_by_nid
 
 
-def get_type_roc_curve(df, sess2vertical_transitions, binned_resp_dict, target_transition,
-                       num_bins=40, above_threshold=True,):
-    tpr_by_type = {}
-    fpr_by_type = {}
-    auc_by_type = {}
-    functions_by_type = {}
-    ds_by_type = {}
-    for t in range(1, 33):
-
-        fpr, tpr, f, auc, ds = get_roc_curve(binned_resp_dict[t],
-                                             sess2vertical_transitions[t],
-                                             target_transition, above_threshold, num_bins)
-
-        tpr_by_type[t] = tpr
-        fpr_by_type[t] = fpr
-        auc_by_type[t] = auc
-        functions_by_type[t] = f
-        ds_by_type[t] = ds
-    return tpr_by_type, fpr_by_type, auc_by_type, functions_by_type, ds_by_type
-
-
 ############################## Stats analyses ##########################################################################
-import numpy as np
-from copy import deepcopy
+
 
 
 def cohens_d(sample_a, sample_b):
+"""
+Compute Cohen's d, a measure of effect size, for two independent samples `sample_a` and `sample_b`.
+
+Parameters
+----------
+sample_a : array-like
+    The first sample of numerical data.
+sample_b : array-like
+    The second sample of numerical data.
+
+Returns
+-------
+d : float
+    The absolute value of Cohen's d, representing the effect size between the two samples.
+"""
+
+
     sigma_a = np.std(sample_a)
     sigma_b = np.std(sample_b)
     n_a = len(sample_a)
@@ -325,13 +321,27 @@ def cohens_d(sample_a, sample_b):
 
 def bootstrap_ci(sample_a, sample_b, n_rep=100, percentile=95):
     """
-    Calculates the {percentile}th bootstrapped confidence interval for the delta
-    of two data samples a and b.
-    :param sample_a: np.array containing samples a
-    :param sample_b: np.array containing samples b
-    :param n_rep: number of repetitions for bootstrapping
-    :param percentile: int in the interval [0, 100]
-    :return:
+    Calculate the bootstrapped confidence interval for the delta (difference in means) between
+    two data samples, `sample_a` and `sample_b`, at the given percentile.
+
+    Parameters
+    ----------
+    sample_a : ndarray
+        An array containing the first set of samples (sample A).
+    sample_b : ndarray
+        An array containing the second set of samples (sample B).
+    n_rep : int
+        The number of bootstrap repetitions.
+    percentile : int
+        The percentile for the confidence interval, must be in the range [0, 100].
+
+    Returns
+    -------
+    ci_lower : float
+        The lower bound of the bootstrapped confidence interval.
+    ci_upper : float
+        The upper bound of the bootstrapped confidence interval.
+
     """
     n_a = len(sample_a)
     n_b = len(sample_b)
@@ -348,12 +358,29 @@ def bootstrap_ci(sample_a, sample_b, n_rep=100, percentile=95):
 
 def perform_permutation_test(sample_a, sample_b, n_rep=100000, seed=8723):
     """
-    Performs a permutation test on samples a and b
-    :param sample_a:
-    :param sample_b:
-    :param n_rep:
-    :param seed:
-    :return:
+    Perform a permutation test to evaluate the statistical significance of the difference in means
+    between two samples, `sample_a` and `sample_b`.
+
+    Parameters
+    ----------
+    sample_a : array-like
+        The first sample of numerical data.
+    sample_b : array-like
+        The second sample of numerical data.
+    n_rep : int, optional
+        The number of permutations to perform (default is 100000).
+    seed : int, optional
+        The seed for the random number generator to ensure reproducibility (default is 8723).
+
+    Returns
+    -------
+    permuted_diffs : ndarray
+        An array of differences in means between the two permuted samples for each iteration.
+    orig_diff : float
+        The absolute difference in means between the original `sample_a` and `sample_b`.
+    p_value : float
+        The p-value representing the fraction of permuted differences greater than the original difference.
+
     """
     np.random.seed(seed)
     size_a = len(sample_a)

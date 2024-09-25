@@ -8,15 +8,19 @@ def calculate_angle(dataframe: pd.DataFrame,
                     diag_column: str,
                     offdiag_column: str,
                     inplace: bool =True):
-    '''
-    Calculates the angle about the diagonal for a given MEI property
-    :param dataframe:
-    :param target_column:
-    :param diag_column:
-    :param offdiag_column:
-    :param inplace:
-    :return:
-    '''
+    """
+    Calculate the angle about the diagonal (i.e. UV=green) for a given MEI property (e.g. size), using the projection onto the diagonal and the off-diagonal.
+    
+    Parameters:
+        dataframe (pd.DataFrame): The input dataframe.
+        target_column (str): The name of the new column to be inserted (e.g. angle_size).
+        diag_column (str): The name of the column holding the projection onto the diagonal.
+        offdiag_column (str): The name of the column holding the projection onto the off-diagonal.
+        inplace (bool, optional): If True, the new column is inserted in-place. If False, the new column is returned.
+    
+    Returns:
+        pd.Series or None: The new column if inplace=False, otherwise None.
+    """
     column = abs(np.arctan(dataframe[offdiag_column] / dataframe[diag_column]))
     if inplace:
         dataframe.insert(dataframe.shape[1], target_column, column)
@@ -36,9 +40,24 @@ def get_temporal_contrast(neuron_id,
     """
     Fetch the SVD components of a neuron's MEI and calculate temporal contrast as the signed
     difference between the last and the second-to-last peak. To get absolute amplitude, multiply with singular value
+    Args:
+        neuron_id (int): The ID of the neuron.
+        chans (list): List of channels.
+        df (pd.DataFrame): The DataFrame containing the MEI data.
+        sd_factor (float, optional): The standard deviation factor. Defaults to 1.
+        distance (int, optional): The distance between peaks, passed to find_peaks function. Defaults to 5.
+        temp_key (str, optional): The key for the temporal kernel in the DataFrame. Defaults to "temporal_kernel".
+        spat_key (str, optional): The key for the spatial kernel in the DataFrame. Defaults to "spatial_kernel".
+        sing_key (str, optional): The key for the singular value in the DataFrame. Defaults to "singular_value".
+        recon_key (str, optional): The key for the rank-1 MEI reconstructed from spatial and temporal component in the DataFrame. Defaults to "recon_mei".
+        use_center_mask (bool, optional): Whether to use the center mask. Defaults to True.
+    Returns:
+        tuple: A tuple containing three dictionaries:
+            - contrast_dict (dict): A dictionary containing the temporal contrast for each channel.
+            - contrast_dict_abs (dict): A dictionary containing the absolute temporal contrast for each channel.
+            - peaks_dict (dict): A dictionary containing the locations of the negative and positive peaks for each channel.
     """
-    print(neuron_id)
-    print(df.shape)
+
     temp, spat, s, recon_mei = df[[temp_key, spat_key, sing_key, recon_key]].loc[neuron_id].to_numpy()
     contrast_dict = {"green": None, "uv": None}
     contrast_dict_abs = {"green": None, "uv": None}
