@@ -1,6 +1,6 @@
 # rgc-natstim-model
 ## Description
-Companion repository to publication "[A chromatic feature detector in the retina signals visual context changes](https://www.biorxiv.org/content/10.1101/2022.11.30.518492v2)".
+Companion repository to publication "[A chromatic feature detector in the retina signals visual context changes](https://elifesciences.org/articles/86860)".
 
 We trained CNN models (*digital twins*) of mouse retinal processing of naturalistic stimuli. We then used the models to analyse neuronal stimulus selectivities *in-silico* and found a selectivity for chromatic contrast in a type of contrast-suppressed retinal ganglion cell (RGC). Based on this feature, we proposed a role in detecting visual context changes for this RGC type.
 
